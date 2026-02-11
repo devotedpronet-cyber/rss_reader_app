@@ -72,6 +72,7 @@ const CORS_PROXIES = [
 // DOM elements
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
+const kindGirlsTab = document.getElementById('kindgirls-tab');
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
@@ -84,24 +85,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Set up direct navigation for external tab
 function setupExternalTabNavigation() {
-    const externalTabBtn = document.querySelector('[data-tab="external"]');
-    if (externalTabBtn) {
-        externalTabBtn.addEventListener('click', () => {
-            window.open('https://kindgirls.com/r.php', '_blank');
-        });
-    }
+    // Make the Kind Girls tab directly redirect to the external link
+    kindGirlsTab.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent normal tab switching
+        window.location.href = 'https://kindgirls.com/r.php'; // Redirect to the external link
+    });
 }
 
-// Set up tab navigation
+// Set up tab navigation for other tabs
 function setupTabNavigation() {
     tabBtns.forEach(btn => {
+        // Skip the Kind Girls tab since it has its own handler
+        if (btn.id === 'kindgirls-tab') return;
+        
         btn.addEventListener('click', (e) => {
-            // Don't redirect for external tab, just activate it normally
-            if (btn.getAttribute('data-tab') === 'external') {
-                e.preventDefault();
-                return; // Allow the regular tab switching to occur
-            }
-            
             const tabId = btn.getAttribute('data-tab');
             
             // Update active tab button
