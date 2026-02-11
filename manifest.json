@@ -1,0 +1,27 @@
+{
+  "name": "RSS Feed Reader",
+  "version": "1.0.0",
+  "description": "A beautiful, responsive web application that displays RSS feeds in categorized tabs with large thumbnails where available.",
+  "files": [
+    "index.html",
+    "styles.css",
+    "script.js",
+    "README.md"
+  ],
+  "categories": [
+    "Payments Industry",
+    "High-Risk Merchant Processing", 
+    "Bitcoin & Blockchain",
+    "News in Portugal",
+    "News in Ukraine",
+    "Affiliate Websites",
+    "External Link"
+  ],
+  "features": [
+    "Responsive design",
+    "Tabbed interface",
+    "Large image thumbnails",
+    "Modern UI/UX",
+    "Direct RSS fetching in browser"
+  ]
+}
