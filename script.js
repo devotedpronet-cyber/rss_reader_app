@@ -1,5 +1,23 @@
 // Mock data for when RSS feeds fail - only used as last resort
 const MOCK_DATA = {
+    payments: [
+        {
+            title: "Digital Payment Innovations Transforming Commerce",
+            description: "How new payment technologies are revolutionizing the way businesses and consumers transact in the digital economy.",
+            link: "#",
+            pubDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+            imageUrl: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            source: "Payment Innovation Today"
+        },
+        {
+            title: "Regulatory Changes Impact Payment Processing",
+            description: "Analysis of new regulations affecting payment processors and their impact on merchant services worldwide.",
+            link: "#",
+            pubDate: new Date(Date.now() - 172800000).toISOString(), // Two days ago
+            imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            source: "Financial Compliance Report"
+        }
+    ],
     crypto: [
         {
             title: "Bitcoin's Role in Institutional Investment",
@@ -38,7 +56,7 @@ const MOCK_DATA = {
     ]
 };
 
-// RSS feed URLs by category - focusing on reliable payments feeds
+// RSS feed URLs by category
 const RSS_FEEDS = {
     payments: [
         'https://www.pymnts.com/feed/',
@@ -70,100 +88,117 @@ const CORS_PROXIES = [
 ];
 
 // DOM elements
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-const kindGirlsTab = document.getElementById('kindgirls-tab');
+const navItems = document.querySelectorAll('.nav-item');
+const chips = document.querySelectorAll('.chip');
+const articlesContainer = document.getElementById('articles-container');
+
+// State management
+let currentState = {
+    activeSection: 'payments',
+    activeTopic: 'all',
+    allArticles: {},
+    filteredArticles: []
+};
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    setupTabNavigation();
-    loadActiveTabContent();
-    
-    // Set up direct navigation for external tab
-    setupExternalTabNavigation();
+    initializeApp();
 });
 
-// Set up direct navigation for external tab
-function setupExternalTabNavigation() {
-    // Make the Kind Girls tab directly redirect to the external link
-    kindGirlsTab.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent normal tab switching
-        window.location.href = 'https://kindgirls.com/r.php'; // Redirect to the external link
-    });
+// Initialize the application
+function initializeApp() {
+    setupNavigation();
+    setupTopicSelector();
+    loadSectionData(currentState.activeSection);
 }
 
-// Set up tab navigation for other tabs
-function setupTabNavigation() {
-    tabBtns.forEach(btn => {
-        // Skip the Kind Girls tab since it has its own handler
-        if (btn.id === 'kindgirls-tab') return;
-        
-        btn.addEventListener('click', (e) => {
-            const tabId = btn.getAttribute('data-tab');
+// Set up bottom navigation
+function setupNavigation() {
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const section = item.getAttribute('data-section');
             
-            // Update active tab button
-            tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            // Add haptic feedback
+            item.classList.add('haptic-feedback');
+            setTimeout(() => item.classList.remove('haptic-feedback'), 200);
             
-            // Show corresponding content
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabId) {
-                    content.classList.add('active');
-                    
-                    // Load content if it hasn't been loaded yet
-                    if (!content.dataset.loaded) {
-                        loadTabContent(tabId);
-                        content.dataset.loaded = 'true';
-                    }
-                }
-            });
+            if (section === 'external') {
+                // Handle external link by replacing current page as requested
+                window.location.href = 'https://kindgirls.com/r.php';
+                return;
+            }
+            
+            // Update active states
+            navItems.forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Update state and load data
+            currentState.activeSection = section;
+            loadSectionData(section);
         });
     });
 }
 
-// Load content for the initially active tab
-function loadActiveTabContent() {
-    const activeTab = document.querySelector('.tab-content.active');
-    if (activeTab && activeTab.id !== 'external') {
-        loadTabContent(activeTab.id);
-        activeTab.dataset.loaded = 'true';
-    } else if (activeTab && activeTab.id === 'external') {
-        // For external tab, set as loaded without loading content
-        activeTab.dataset.loaded = 'true';
+// Set up topic selector
+function setupTopicSelector() {
+    chips.forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            const topic = chip.getAttribute('data-topic');
+            
+            // Add haptic feedback
+            chip.classList.add('haptic-feedback');
+            setTimeout(() => chip.classList.remove('haptic-feedback'), 200);
+            
+            // Update active states
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            // Update state and filter data
+            currentState.activeTopic = topic;
+            filterArticles();
+        });
+    });
+}
+
+// Load data for a specific section
+async function loadSectionData(section) {
+    if (section === 'external') return;
+    
+    // Show loading state
+    showLoading();
+    
+    try {
+        const articles = await fetchFeedsForTab(section);
+        
+        // Store articles in state
+        currentState.allArticles[section] = articles;
+        
+        // Filter and display articles
+        filterArticles();
+    } catch (error) {
+        console.error(`Error loading ${section} feeds:`, error);
+        // Show error message or mock data
+        const mockData = MOCK_DATA[section] || [];
+        currentState.allArticles[section] = mockData;
+        filterArticles();
     }
 }
 
-// Load content for a specific tab
-function loadTabContent(tabId) {
-    if (tabId === 'external') return; // External tab doesn't need RSS loading
+// Filter articles based on current topic
+function filterArticles() {
+    const section = currentState.activeSection;
+    const topic = currentState.activeTopic;
     
-    const container = document.getElementById(`${tabId}-articles`);
+    let articles = currentState.allArticles[section] || [];
     
-    // Show loading state
-    showLoading(container);
+    // Apply topic filter (simplified - in a real app this would be more complex)
+    if (topic !== 'all') {
+        // For demo purposes, we'll just use the articles as-is
+        // In a real implementation, this would filter by specific topics within the section
+    }
     
-    // Fetch and display feeds for this tab
-    fetchFeedsForTab(tabId)
-        .then(articles => {
-            // Only use mock data if absolutely no real articles found AND it's a category that has mock data
-            if (articles.length === 0 && tabId !== 'payments' && MOCK_DATA[tabId]) {
-                displayArticles(container, MOCK_DATA[tabId]);
-            } else {
-                displayArticles(container, articles);
-            }
-        })
-        .catch(error => {
-            console.error(`Error loading ${tabId} feeds:`, error);
-            // For payments, never use mock data - always try to show whatever real data we could get
-            if (tabId === 'payments') {
-                displayArticles(container, []); // Show no articles message instead of mock data
-            } else if (MOCK_DATA[tabId]) {
-                displayArticles(container, MOCK_DATA[tabId]);
-            } else {
-                displayArticles(container, []); // Show no articles message
-            }
-        });
+    currentState.filteredArticles = articles;
+    displayArticles(articles);
 }
 
 // Fetch feeds for a specific tab with multiple proxy fallback
@@ -177,9 +212,6 @@ async function fetchFeedsForTab(tabId) {
             const articles = await fetchFeedWithProxyFallback(feedUrl);
             if (articles.length > 0) {
                 allArticles.push(...articles);
-                console.log(`Successfully fetched ${articles.length} articles from ${feedUrl}`); // Debug logging
-            } else {
-                console.log(`No articles found in feed: ${feedUrl}`); // Debug logging
             }
         } catch (err) {
             console.warn(`Failed to fetch ${feedUrl} after all proxy attempts:`, err);
@@ -272,8 +304,6 @@ async function fetchFeedWithProxyFallback(feedUrl) {
                 });
             });
             
-            console.log(`Parsed ${articles.length} articles from ${feedUrl}`); // Debug logging
-            
             // If we successfully parsed the feed, return the articles
             if (articles.length > 0) {
                 return articles;
@@ -316,13 +346,16 @@ function stripHtml(html) {
 }
 
 // Display articles in the container
-function displayArticles(container, articles) {
+function displayArticles(articles) {
     if (articles.length === 0) {
-        container.innerHTML = '<div class="no-articles">No articles found in the feeds. Feeds may be temporarily unavailable, restricted, or the content may have moved. Please try again later.</div>';
+        articlesContainer.innerHTML = '<div class="no-articles">No articles found in the feeds. Feeds may be temporarily unavailable, restricted, or the content may have moved. Please try again later.</div>';
         return;
     }
     
-    container.innerHTML = articles.map(article => createArticleElement(article)).join('');
+    articlesContainer.innerHTML = articles.map(article => createArticleElement(article)).join('');
+    
+    // Add tap and long press interactions
+    addArticleInteractions();
 }
 
 // Create article element HTML
@@ -331,16 +364,14 @@ function createArticleElement(article) {
     const formattedDate = pubDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
     });
     
     return `
-        <div class="article-card">
+        <div class="article-card" data-article-id="${article.link}">
             ${article.imageUrl ? `
                 <div class="article-image">
-                    <img src="${article.imageUrl}" alt="${article.title}" onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #2c3e50, #34495e)'; this.parentElement.innerHTML='<span class=\'no-image-text\'>📰 No Image Available</span>';">
+                    <img src="${article.imageUrl}" alt="${article.title}" onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #e6e6e6, #f0f0f0)'; this.parentElement.innerHTML='<span class=\'no-image-text\'>📰 No Image Available</span>';">
                 </div>
             ` : ''}
             <div class="article-header">
@@ -351,15 +382,72 @@ function createArticleElement(article) {
                     <span class="article-date">${formattedDate}</span>
                     <span class="article-source">${article.source}</span>
                 </div>
-                <p class="article-excerpt">${article.description.substring(0, 200)}${article.description.length > 200 ? '...' : ''}</p>
+                <p class="article-excerpt">${article.description.substring(0, 180)}${article.description.length > 180 ? '...' : ''}</p>
             </div>
         </div>
     `;
 }
 
+// Add tap and long press interactions to articles
+function addArticleInteractions() {
+    const articleCards = document.querySelectorAll('.article-card');
+    
+    articleCards.forEach(card => {
+        // Tap interaction - simulate navigation to article
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'A') { // Don't interfere with link clicks
+                const link = card.querySelector('a');
+                if (link) {
+                    window.open(link.href, '_blank');
+                }
+            }
+        });
+        
+        // Long press interaction - show quick actions
+        let pressTimer;
+        card.addEventListener('touchstart', (e) => {
+            pressTimer = window.setTimeout(() => {
+                showQuickActions(card);
+            }, 500); // 500ms for long press
+        });
+        
+        card.addEventListener('touchend', () => {
+            clearTimeout(pressTimer);
+        });
+        
+        card.addEventListener('touchmove', () => {
+            clearTimeout(pressTimer);
+        });
+    });
+}
+
+// Show quick actions for an article
+function showQuickActions(card) {
+    const articleTitle = card.querySelector('.article-title a').textContent;
+    const articleLink = card.querySelector('.article-title a').href;
+    
+    // In a real app, this would show a bottom sheet with actions
+    // For now, we'll just show a simple alert
+    const action = prompt(`Actions for "${articleTitle}":\n\n1. Save\n2. Share\n3. Mark as Read\n\nEnter action number:`);
+    
+    if (action === '2') {
+        // Share action
+        if (navigator.share) {
+            navigator.share({
+                title: articleTitle,
+                url: articleLink
+            }).catch(console.error);
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(articleLink);
+            alert('Link copied to clipboard!');
+        }
+    }
+}
+
 // Show loading state
-function showLoading(container) {
-    container.innerHTML = `
+function showLoading() {
+    articlesContainer.innerHTML = `
         <div class="loading">
             <div class="spinner"></div>
             <p>Loading articles...</p>
@@ -367,18 +455,37 @@ function showLoading(container) {
     `;
 }
 
-// Add smooth scrolling for better UX on mobile
-if ('scrollBehavior' in document.documentElement.style) {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+// Add pull-to-refresh functionality
+function setupPullToRefresh() {
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    
+    document.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        isDragging = true;
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        
+        currentY = e.touches[0].clientY;
+        const diffY = currentY - startY;
+        
+        if (diffY > 0 && window.scrollY <= 0) {
+            // Pull down logic here
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
+        }
+    });
+    
+    document.addEventListener('touchend', () => {
+        if (isDragging && (currentY - startY) > 100) {
+            // Refresh the current section
+            loadSectionData(currentState.activeSection);
+        }
+        isDragging = false;
     });
 }
+
+// Initialize pull to refresh
+setupPullToRefresh();

@@ -5,55 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSS Feed Reader</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
-<body>
+<body class="theme-dark">
     <div class="container">
-        <header>
-            <h1>RSS Feed Reader</h1>
-            <p>Stay updated with the latest news and insights</p>
+        <!-- Header with topic selector -->
+        <header class="app-header">
+            <div class="topic-selector">
+                <div class="chip active" data-topic="all">All</div>
+                <div class="chip" data-topic="payments">Payments</div>
+                <div class="chip" data-topic="crypto">Crypto</div>
+                <div class="chip" data-topic="portugal">Portugal</div>
+            </div>
         </header>
         
-        <nav class="tabs">
-            <button class="tab-btn active" data-tab="payments">Payments Industry</button>
-            <button class="tab-btn" data-tab="crypto">Bitcoin & Blockchain</button>
-            <button class="tab-btn" data-tab="portugal">Portugal News</button>
-            <button class="tab-btn external-tab" id="kindgirls-tab" data-tab="external">Kind Girls</button>
-        </nav>
-        
+        <!-- Main content area -->
         <main class="content">
-            <!-- Payments Industry Tab -->
-            <section id="payments" class="tab-content active">
-                <div class="feed-container">
-                    <h2>Payments Industry</h2>
-                    <div class="articles-container" id="payments-articles"></div>
-                </div>
-            </section>
-            
-            <!-- Bitcoin & Blockchain Tab -->
-            <section id="crypto" class="tab-content">
-                <div class="feed-container">
-                    <h2>Bitcoin & Blockchain</h2>
-                    <div class="articles-container" id="crypto-articles"></div>
-                </div>
-            </section>
-            
-            <!-- Portugal News Tab -->
-            <section id="portugal" class="tab-content">
-                <div class="feed-container">
-                    <h2>News in Portugal</h2>
-                    <div class="articles-container" id="portugal-articles"></div>
-                </div>
-            </section>
-            
-            <!-- External Link Tab -->
-            <section id="external" class="tab-content">
-                <div class="external-link-container">
-                    <h2>Kind Girls</h2>
-                    <p class="redirect-message">Redirecting to Kind Girls...</p>
-                </div>
-            </section>
+            <div class="feed-container">
+                <div class="articles-container" id="articles-container"></div>
+            </div>
         </main>
+        
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-section="payments">
+                <i class="ri-bank-card-line nav-icon"></i>
+                <span class="nav-label">Payments</span>
+            </button>
+            <button class="nav-item" data-section="crypto">
+                <i class="ri-bit-coin-line nav-icon"></i>
+                <span class="nav-label">Crypto</span>
+            </button>
+            <button class="nav-item" data-section="portugal">
+                <i class="ri-newspaper-line nav-icon"></i>
+                <span class="nav-label">Portugal</span>
+            </button>
+            <button class="nav-item" data-section="external">
+                <i class="ri-external-link-line nav-icon"></i>
+                <span class="nav-label">Kind Girls</span>
+            </button>
+        </nav>
     </div>
     
     <script src="script.js"></script>
